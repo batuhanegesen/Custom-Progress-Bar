@@ -6,22 +6,23 @@ using TMPro;
 using UnityEngine.UI;
 using Unity;
 using UnityEngine.EventSystems;
+using batudev.CustomUI;
+using Unity.VisualScripting;
 
-[CustomEditor(typeof(BD_ProgressBar))]
+[CustomEditor(typeof(ProgressBar))]
 
 public class EditorProgressBar : Editor
 {
-    BD_ProgressBar bar;
+    ProgressBar bar;
     public override void OnInspectorGUI()
     {
-        bar = (BD_ProgressBar)target;
-
-        // bar.CheckPool();
+        bar = (ProgressBar)target;
 
         EditorGUI.BeginChangeCheck();
         DrawLayout();
         if (EditorGUI.EndChangeCheck())
         {
+            bar.AssignProperties();
             bar.CheckPool();
             bar.PaintUI();
             EditorApplication.QueuePlayerLoopUpdate();
@@ -32,15 +33,25 @@ public class EditorProgressBar : Editor
     {
 
         EditorGUILayout.BeginHorizontal();
-        GUILayout.Label("Size");
-        GUILayout.FlexibleSpace(); // Fill Space Beginning
-        bar.Size = EditorGUILayout.IntField(bar.Size);
-        EditorGUILayout.EndHorizontal();
+        Texture2D boxTex;
+        Sprite barSprite;
+        if (bar.IconSprite == null)
+        {
+            boxTex = Resources.Load("icons8_eye_60px") as Texture2D;
+            barSprite = Sprite.Create(boxTex, new Rect(0,0,boxTex.width, boxTex.height), new Vector2(0.5f, 0.5f));
+        }
+        else{
+            barSprite = bar.IconSprite;
+            boxTex = bar.IconSprite.texture;
+        }
 
-        EditorGUILayout.BeginHorizontal();
-        GUILayout.Label("Show Increment");
+        GUILayout.Box(boxTex, GUILayout.MinWidth(100), GUILayout.MinHeight(100));
+        EditorGUILayout.BeginVertical();
         GUILayout.FlexibleSpace(); // Fill Space Beginning
-        bar.ShowIncrement = EditorGUILayout.Toggle(bar.ShowIncrement);
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Label("Icon Sprite");
+        GUILayout.FlexibleSpace(); // Fill Space Beginning
+        bar.IconSprite = (Sprite)EditorGUILayout.ObjectField(barSprite, typeof(Sprite), false);
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
@@ -50,10 +61,40 @@ public class EditorProgressBar : Editor
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
-        GUILayout.Label("Icon Sprite");
+        GUILayout.Label("Initialize Object Pool");
         GUILayout.FlexibleSpace(); // Fill Space Beginning
-        bar.IconSprite = (Sprite)EditorGUILayout.ObjectField(bar.IconSprite, typeof(Sprite), false);
+        bar.ObjectPoolingSize = EditorGUILayout.IntField(bar.ObjectPoolingSize);
         EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Label("Starting Value");
+        GUILayout.FlexibleSpace(); // Fill Space Beginning
+        bar.DefaultLevel = EditorGUILayout.IntField(bar.DefaultLevel);
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Label("Bar Length");
+        GUILayout.FlexibleSpace(); // Fill Space Beginning
+        bar.Size = EditorGUILayout.IntField(bar.Size);
+        EditorGUILayout.EndHorizontal();
+
+        GUILayout.FlexibleSpace(); // Fill Space Beginning
+        EditorGUILayout.EndVertical();
+        EditorGUILayout.EndHorizontal();
+
+
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Label("Slice Mode");
+        GUILayout.FlexibleSpace(); // Fill Space Beginning
+        bar.SliceMode = EditorGUILayout.Toggle(bar.SliceMode);
+        GUILayout.Label("Show Value");
+        bar.ShowIncrement = EditorGUILayout.Toggle(bar.ShowIncrement);
+        GUILayout.Label("Show Buttons");
+        bar.ShowButtons = EditorGUILayout.Toggle(bar.ShowButtons);
+        GUILayout.Label("Show Percentage");
+        bar.ShowPercentage = EditorGUILayout.Toggle(bar.ShowPercentage);
+        EditorGUILayout.EndHorizontal();
+
 
         EditorGUILayout.BeginHorizontal();
         GUILayout.Label("Enable Color");
@@ -73,11 +114,7 @@ public class EditorProgressBar : Editor
         bar.BarLevel = EditorGUILayout.IntSlider(bar.BarLevel, 0, bar.Size);
         EditorGUILayout.EndHorizontal();
 
-        EditorGUILayout.BeginHorizontal();
-        GUILayout.Label("Default Value");
-        GUILayout.FlexibleSpace(); // Fill Space Beginning
-        bar.DefaultLevel = EditorGUILayout.IntField(bar.DefaultLevel);
-        EditorGUILayout.EndHorizontal();
+
     }
 
 
@@ -85,6 +122,7 @@ public class EditorProgressBar : Editor
     public static void CreateBar(MenuCommand menuCommand)
     {
         GameObject newObject = PrefabUtility.InstantiatePrefab(Resources.Load("Custom Bar")) as GameObject;
+        PrefabUtility.UnpackPrefabInstance(newObject, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
         PlaceObject(newObject);
     }
 
@@ -127,6 +165,12 @@ public class EditorProgressBar : Editor
         Undo.RegisterCreatedObjectUndo(gameObject, $"Create Object: {gameObject.name}");
         Selection.activeGameObject = gameObject;
 
+        EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+    }
+
+
+    public static void MarkDirty()
+    {
         EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
     }
 }
