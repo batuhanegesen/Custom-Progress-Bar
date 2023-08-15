@@ -81,7 +81,7 @@ public class EditorProgressBar : Editor
     }
 
 
-    [MenuItem("GameObject/Custom/Progress Bar")]
+    [MenuItem("GameObject/UI/Custom/Progress Bar")]
     public static void CreateBar(MenuCommand menuCommand)
     {
         GameObject newObject = PrefabUtility.InstantiatePrefab(Resources.Load("Custom Bar")) as GameObject;

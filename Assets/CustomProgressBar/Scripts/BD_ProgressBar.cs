@@ -132,7 +132,6 @@ public class BD_ProgressBar : MonoBehaviour
 
         if (!HasPool())
         {
-            Debug.Log("Creating Pool");
             ClearBar();
             pool = null;
             CreateSegmentPool(PoolSize);
@@ -155,7 +154,6 @@ public class BD_ProgressBar : MonoBehaviour
 
     public bool HasPool()
     {
-        print(transform.childCount);
         if (transform.Find("bar_root") != null)
         {
             return true;
